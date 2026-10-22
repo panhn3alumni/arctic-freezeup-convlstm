@@ -1,0 +1,69 @@
+data:
+  # 处理后的序列/目标/掩膜实际位于本仓库 npy/ 目录(旧路径 sea_ice_forecast/convlstm/data/n 已不存在)。
+  # verify* 脚本用 base_dir(默认 ./npy); step2 预处理用 input_dir/output_dir。
+  base_dir: "./npy"
+  input_dir: "./npy"
+  output_dir: "./npy"
+
+  seq_file: "sequences_seasonal.npy"
+  target_file: "targets_seasonal.npy"
+  mask_file: "land_mask_static.npy"
+  scaler_file: "scaler_params.npy"
+  met_target_file: "targets_met_seasonal.npy"
+
+#  version: "F13"
+#  start_year: 1996
+#  end_year: 2007
+#  version: "F17"
+#  start_year: 2008
+#  end_year: 2025
+  # 注意: 处理后的数据是 F13(1996-2007) 与 F17(2008-2025) 拼接后的 1996-2025 序列,
+  # 故此处 version 仅为来源标注; 实际序列已由 step0/step2 拼接完成(见 npy/)。
+  version: "F17"
+  start_year: 1996
+  end_year: 2025
+  pole: "n"
+
+  lat_min: 65
+  lat_max: 85
+  lon_min: 30
+  lon_max: 210
+
+  # 序列长度
+  sequence_length: 10
+  prediction_length: 10
+
+  batch_size: 8
+  num_workers: 0  # Windows 必须为 0
+
+#  channel_names: ['SIC', 't2m', 'sp', 'u10', 'v10', 'land_mask']
+#  channel_names: ['SIC', 't2m', 'd2m', 'wind_speed', 'sp_mag', 'fdd', 'land_mask']
+#  channel_names: ['SIC', 't2m', 'd2m', 'fdd2', 'fdd4', 'fdd6', 'fdd8', 'fdd10', 'fdd15', 'land_mask']
+  channel_names: ['SIC', 't2m', 'd2m', 'u10', 'v10', 'sp_grad_x', 'sp_grad_y', 'fdd2', 'fdd4', 'fdd6', 'fdd8', 'fdd10', 'fdd15', 'fdd20', 'land_mask']
+#  use_channels: ['SIC', 't2m', 'land_mask']
+  use_channels: ['SIC', 't2m', 'd2m', 'u10', 'v10', 'sp_grad_x', 'sp_grad_y', 'fdd2', 'fdd4', 'fdd6', 'fdd8', 'fdd10', 'fdd15', 'fdd20', 'land_mask']
+#  use_channels: ['SIC', 't2m', 'd2m', 'u10', 'v10', 'sp_grad_x', 'sp_grad_y', 'land_mask']
+
+
+model:
+  hidden_dim: 64
+  num_layers: 2
+  kernel_size: 3
+
+train:
+  epochs: 200
+  learning_rate: 5e-5
+  weight_decay: 1e-4
+  checkpoint_dir: "checkpoints"
+  device: "cuda"         # 或 "cpu"
+  patience: 15
+
+infer:
+  model_path: "checkpoints/best_model.pth"
+  output_path: "第1次SIC修复全通道"
+#  output_path: "第2次无fdd"
+
+# NSIDC 凭据已外置到 credentials.yaml (本地文件, 不入库); 也可用环境变量 NSIDC_USERNAME / NSIDC_PASSWORD
+nsidc:
+  username: ""
+  password: ""
